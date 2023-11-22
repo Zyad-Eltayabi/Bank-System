@@ -1,6 +1,6 @@
 # Bank System
 
-### simple bank management system implemented using the C++ programming language. The system provides various services, such as managing customer information, conducting financial transactions, and user management. The system consists of several screens, including the main screen, user management screen, and transaction screens.
+#### simple bank management system implemented using the C++ programming language. The system provides various services, such as managing customer information, conducting financial transactions, and user management. The system consists of several screens, including the main screen, user management screen, and transaction screens.
 <hr>
 
 ### Screenshots
