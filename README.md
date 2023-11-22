@@ -45,7 +45,7 @@
 
 #### File Handling :
 
-The program reads and writes user and customer data to files using file handling operations.
+- The program reads and writes user and customer data to files using file handling operations.
 
 #### Usage Instructions :
 
