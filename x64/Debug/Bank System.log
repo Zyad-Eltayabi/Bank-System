@@ -1,3 +1,5 @@
 ﻿  Bank System.cpp
-D:\Programming\C++\07 - Algorithms  Problem Solving Level 3\Bank System\Bank System.cpp(63,30): warning C4267: '=': conversion from 'size_t' to 'short', possible loss of data
-  Bank System.vcxproj -> D:\Programming\C++\07 - Algorithms  Problem Solving Level 3\Bank System\x64\Debug\Bank System.exe
+D:\Programming\C++\07 - Algorithms  Problem Solving Level 3\Bank System\Bank System.cpp(68,30): warning C4267: '=': conversion from 'size_t' to 'short', possible loss of data
+D:\Programming\C++\07 - Algorithms  Problem Solving Level 3\Bank System\Bank System.cpp(1044,2): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\Programming\C++\07 - Algorithms  Problem Solving Level 3\Bank System\Bank System.cpp(1085): warning C4715: 'CheckPermissions': not all control paths return a value
+D:\Programming\C++\07 - Algorithms  Problem Solving Level 3\Bank System\Bank System.cpp(1054): warning C4715: 'PermissionsResult': not all control paths return a value

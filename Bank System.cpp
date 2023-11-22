@@ -6,6 +6,7 @@
 #include <vector>
 #include <cctype>
 #include <fstream>
+#include <bitset>
 using namespace std;
 
 struct stClientData
@@ -17,8 +18,12 @@ struct stClientData
 	double AccountBalance = 0;
 };
 const string ClientsFileName = "ClientsData.txt";
+const string UsersFileName = "Users.txt";
 const string Separator = "#//#";
+string CurrentUserName;
 void MainScreen();
+void LoginScreen();
+void UsersScreen();
 int ReadNumberInRange(string Message, int From, int To)
 {
 	int Number = 0;
@@ -75,7 +80,6 @@ vector <string> SplitString(string S1, string delim)
 	}
 	return vTokens;
 }
-
 bool CheckClientIfFound(string& AcountNumber)
 {
 	vector <string> vClientsDataInLine;
@@ -158,7 +162,6 @@ short HowManyClientsAdded()
 	}
 	return CountClients;
 }
-
 void PrintClientsHeader()
 {
 	cout << "\n" << setw(50) << "Client List (" << HowManyClientsAdded() << ") Clients(s)" << endl;
@@ -178,7 +181,6 @@ void PrintClientInfo(vector <string>& ClientData)
 		<< "| " << left << setw(15) << ClientData[3]
 		<< "| " << left << setw(15) << ClientData[4] << endl;
 }
-
 void PrintClientsInfo()
 {
 	PrintClientsHeader();
@@ -405,7 +407,7 @@ void DepositScreen(vector <string>& vClientData)
 
 	if (toupper(Accept) == 'Y')
 	{
-		 AddDepositAmount(vClientData,AccountNumber,DepositAmount);
+		AddDepositAmount(vClientData, AccountNumber, DepositAmount);
 	}
 }
 // start total balances
@@ -461,7 +463,7 @@ void PrintClientsInfoInTotalBalancesScreen(vector <string>& vClientData)
 		cout << "\n\n";
 		myfile.close();
 	}
-	cout << right << setw(60) << "Total Balances = " << CalculateTotalBalances(vClientData) ;
+	cout << right << setw(60) << "Total Balances = " << CalculateTotalBalances(vClientData);
 	cout << "\n\n";
 	system("pause");
 	ClearScreen();
@@ -562,16 +564,401 @@ void TransactionsScreen(vector <string>& vClientData)
 	cout << setw(20) << "[4]" << " Main Menue." << endl;
 	cout << "=================================================================\n";
 	TransactionsChooses(vClientData);
-
 }
-// START MAIN SCREEN
-void ExiScreen()
+// USER SCREEN SECTION =====================================================================
+enum enUserChooses
+{
+	ListUser = 1, AddUser = 2, Deleteuser = 3, UpdateUser = 4, FindUser = 5, MainMenueScreen = 6
+};
+vector <string> SaveUsersDateInVector();
+// List user screen
+short HowManyUsersAdded()
+{
+	fstream myfile;
+	myfile.open(UsersFileName, ios::in);
+	short CountUsers = 0;
+	if (myfile.is_open())
+	{
+		string OneLine;
+		while (getline(myfile, OneLine))
+		{
+			if (OneLine != "")
+			{
+				CountUsers++;
+			}
+		}
+		myfile.close();
+	}
+	return CountUsers;
+}
+void PrintUsersHeader()
+{
+	cout << "\n" << setw(50) << "Users List (" << HowManyUsersAdded() << ") User(s)" << endl;
+	cout << "\n______________________________________________________________________________________________________________\n\n";
+	cout << "| " << left << setw(30) << "User Name"
+		<< "| " << left << setw(20) << "Password"
+		<< "| " << left << setw(35) << "Permissions" << endl;
+	cout << "\n______________________________________________________________________________________________________________\n\n";
+}
+void PrintUserInfo(vector <string>& UsersDate)
+{
+	cout << "| " << left << setw(30) << UsersDate[0]
+		<< "| " << left << setw(20) << UsersDate[1]
+		<< "| " << left << setw(35) << UsersDate[2] << endl;
+}
+void PrintUsersInfo()
+{
+	PrintUsersHeader();
+	fstream myfile;
+	myfile.open(UsersFileName, ios::in);
+	if (myfile.is_open())
+	{
+		string OneLine;
+		while (getline(myfile, OneLine))
+		{
+			if (OneLine != "")
+			{
+				vector <string> ClearSeparatorInUserData = SplitString(OneLine, "#//#");
+				PrintUserInfo(ClearSeparatorInUserData);
+			}
+			cout << "\n";
+		}
+		cout << "\n______________________________________________________________________________________________________________\n";
+		cout << "\n\n";
+		myfile.close();
+	}
+	system("pause");
+	ClearScreen();
+}
+// Add user screen
+struct stUserInfo
+{
+	string UserName, Password;
+	int Permissions;
+};
+string CreateUserDataInLine(stUserInfo UserData, string Separator = "#//#")
+{
+	string UserRecord = "";
+	UserRecord = UserData.UserName + Separator +
+		UserData.Password + Separator + to_string(UserData.Permissions);
+	return UserRecord;
+}
+void SaveUserDataInFile(string UserData, string FileName)
+{
+	fstream myfile;
+	myfile.open(FileName, ios::out | ios::app);
+	if (myfile.is_open())
+	{
+		myfile << UserData << endl;
+		myfile.close();
+	}
+}
+bool CheckUserIfFound(string& UserName)
+{
+	vector <string> vUsersDateInLine;
+	fstream myfile;
+	myfile.open(UsersFileName, ios::in);
+	if (myfile.is_open())
+	{
+		string Line;
+		while (getline(myfile, Line))
+		{
+			vUsersDateInLine.push_back(Line);
+		}
+		myfile.close();
+	}
+	for (string& L : vUsersDateInLine)
+	{
+		vector <string> vUsersDateInLine = SplitString(L, Separator);
+		if (vUsersDateInLine[0] == UserName)
+		{
+			return true;
+			break;
+		}
+	}
+	return false;
+}
+int GetPermissions()
+{
+	char Access = 'Y';
+	cout << "\nDo you want to give full access ? [y/n] ";
+	cin >> Access;
+	int TotalAccess = 0;
+	if (toupper(Access) != 'Y')
+	{
+		cout << "\nDo you want to give access to : \n";
+		cout << "\nShow client list ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 1;
+		cout << "\nAdd new client ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 2;
+		cout << "\nDelete client ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 4;
+		cout << "\nUpdate clients ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 8;
+		cout << "\nFind clients ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 16;
+		cout << "\nTransactions ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 32;
+		cout << "\nManage Users ? ";
+		cin >> Access;
+		if (toupper(Access) == 'Y')
+			TotalAccess += 64;
+		return TotalAccess;
+	}
+	else
+		return -1;
+}
+void AddNewUser()
+{
+	stUserInfo UserData;
+	cout << "\n Enter UserName ? ";
+	getline(cin >> ws, UserData.UserName);
+	while (CheckUserIfFound(UserData.UserName))
+	{
+		cout << "User with [" << UserData.UserName << "] Already exists, Enter anthor Username ? ";
+		getline(cin >> ws, UserData.UserName);
+	}
+	cout << "\n Enter password ? ";
+	getline(cin, UserData.Password);
+	UserData.Permissions = GetPermissions();
+	// Save new user data to file
+	SaveUserDataInFile(CreateUserDataInLine(UserData), UsersFileName);
+}
+void AddUsers()
+{
+	char NewUser = 'Y';
+	do
+	{
+		system("cls");
+		cout << "-----------------------------------------\n";
+		cout << setw(30) << "Add new users Screen:\n";
+		cout << "-----------------------------------------\n";
+		cout << "\nAdding new user:\n";
+		AddNewUser();
+		cout << "\nUser Added Successfully, Do you want to add new user? Enter Y/N ==> ";
+		cin >> NewUser;
+	} while (toupper(NewUser) == 'Y');
+	system("pause");
+	ClearScreen();
+}
+//Delete users
+void PrintUserInfoInUserScreen(vector <string>& UserDate)
+{
+	cout << "\nThe Following are the user details:\n";
+	cout << "------------------------------------------\n";
+	cout << "User Name              : " << UserDate[0] << endl;
+	cout << "Password               : " << UserDate[1] << endl;
+	cout << "Permissions            : " << UserDate[2] << endl;
+	cout << "------------------------------------------\n";
+}
+void SaveNewUserAfterDeleteToFile(vector <string>& vUsersData)
+{
+	fstream myfile;
+	myfile.open(UsersFileName, ios::out);
+	if (myfile.is_open())
+	{
+		for (string& Line : vUsersData)
+		{
+			if (Line != "")
+			{
+				myfile << Line << endl;
+			}
+		}
+	}
+	myfile.close();
+}
+void DeleteUser(vector <string>& vUsersData, string UserName)
+{
+	char DeleteUser = 'y';
+	cout << "Do you want to delete this client ? ";
+	cin >> DeleteUser;
+	if ('Y' == toupper(DeleteUser))
+	{
+		for (string& OneLine : vUsersData)
+		{
+			vector <string> vUserDataLine = SplitString(OneLine, "#//#");
+			if (vUserDataLine[0] == UserName)
+			{
+				OneLine = "";
+				cout << "\nUser Deleted successfully.\n\n";
+				SaveNewUserAfterDeleteToFile(vUsersData);
+				break;
+			}
+		}
+	}
+}
+void ShowUserInfoInUserScreen(vector <string>& vUsersData, string& UserName)
+{
+	for (string& Line : vUsersData)
+	{
+		vector <string> vUserDataLine = SplitString(Line, Separator);
+		if (vUserDataLine[0] == UserName)
+		{
+			PrintUserInfoInUserScreen(vUserDataLine);
+			break;
+		}
+	}
+}
+void DeleteUsers()
+{
+	vector <string> vUsersData = SaveUsersDateInVector();
+	cout << "-----------------------------------------\n";
+	cout << setw(30) << "Delete Users Screen:\n";
+	cout << "-----------------------------------------\n";
+	string UserName = "";
+	cout << "\nPlease enter username ? ";
+	cin >> UserName;
+	// not able to delete the admin from the system
+	if (UserName == "admin")
+	{
+		cout << "\nYou cannot delete this user\n\n";
+		system("Pause");
+		UsersScreen();
+	}
+	while (!CheckUserIfFound(UserName))
+	{
+		cout << "User with username [" << UserName << "] is not found, Enter anthorusername ? ";
+		getline(cin >> ws, UserName);
+	}
+	ShowUserInfoInUserScreen(vUsersData, UserName);
+	DeleteUser(vUsersData, UserName);
+	system("pause");
+}
+//Update users
+void UpdateTheUser(vector <string>& vUsersDataLine)
+{
+	cout << "Password ? ";
+	getline(cin >> ws, vUsersDataLine[1]);
+	vUsersDataLine[2] = to_string(GetPermissions());
+}
+void UpdateOneUser(vector <string>& vUsersData, string UserName)
+{
+	char UpdateUser = 'y';
+	cout << "Do you want to update this user ? ";
+	cin >> UpdateUser;
+	if ('Y' == toupper(UpdateUser))
+	{
+		for (string& OneLine : vUsersData)
+		{
+			vector <string> vUsersDataLine = SplitString(OneLine, Separator);
+			if (vUsersDataLine[0] == UserName)
+			{
+				UpdateTheUser(vUsersDataLine);
+				OneLine = JoinString(vUsersDataLine, "#//#");
+				cout << "\nUser Updated successfully.\n\n";
+				SaveNewUserAfterDeleteToFile(vUsersData);
+				break;
+			}
+		}
+	}
+}
+void UpdateUsers()
+{
+	vector <string> vUsersData = SaveUsersDateInVector();
+	cout << "-----------------------------------------\n";
+	cout << setw(30) << "Update Users Screen:\n";
+	cout << "-----------------------------------------\n";
+	string UserName = "";
+	cout << "\nPlease enter username ? ";
+	cin >> UserName;
+	while (!CheckUserIfFound(UserName))
+	{
+		cout << "User with username [" << UserName << "] is not found, Enter anthorusername ? ";
+		getline(cin >> ws, UserName);
+	}
+	ShowUserInfoInUserScreen(vUsersData, UserName);
+	UpdateOneUser(vUsersData, UserName);
+	system("pause");
+}
+// Find Users
+void FindUsers()
+{
+	vector <string> vUsersData = SaveUsersDateInVector();
+	cout << "-----------------------------------------\n";
+	cout << setw(30) << "Find Users Screen:\n";
+	cout << "-----------------------------------------\n";
+	string UserName = "";
+	cout << "\nPlease enter username ? ";
+	cin >> UserName;
+	while (!CheckUserIfFound(UserName))
+	{
+		cout << "User with username [" << UserName << "] is not found, Enter anthorusername ? ";
+		getline(cin >> ws, UserName);
+	}
+	ShowUserInfoInUserScreen(vUsersData, UserName);
+	system("pause");
+}
+void ManageUserScreen(enUserChooses UserChoice)
+{
+	switch (UserChoice)
+	{
+	case ListUser:
+		ClearScreen();
+		PrintUsersInfo();
+		UsersScreen();
+		break;
+	case AddUser:
+		ClearScreen();
+		AddUsers();
+		UsersScreen();
+		break;
+	case Deleteuser:
+		ClearScreen();
+		DeleteUsers();
+		UsersScreen();
+		break;
+	case UpdateUser:
+		ClearScreen();
+		UpdateUsers();
+		UsersScreen();
+		break;
+	case FindUser:
+		ClearScreen();
+		FindUsers();
+		UsersScreen();
+		break;
+	case MainMenueScreen:
+		ClearScreen();
+		MainScreen();
+		break;
+	}
+}
+void UserChooses()
+{
+	int UserChoice = 0;
+	UserChoice = ReadNumberInRange("Choose what do you want to do [ 1 to 6 ] ? ", 1, 6);
+	enUserChooses Choice;
+	Choice = (enUserChooses)UserChoice;
+	ManageUserScreen(Choice);
+}
+void UsersScreen()
 {
 	ClearScreen();
-	cout << "-----------------------------------------\n";
-	cout << setw(25) << "Program Ends :-)\n";
-	cout << "-----------------------------------------\n";
+	cout << "\n=================================================================\n";
+	cout << right << setw(45) << "-( Manage Users Menue Screen )-" << endl;
+	cout << "=================================================================\n";
+	cout << setw(20) << right << "[1]" << " List Users." << endl;
+	cout << setw(20) << "[2]" << " Add New User." << endl;
+	cout << setw(20) << "[3]" << " Delete User." << endl;
+	cout << setw(20) << "[4]" << " Update User." << endl;
+	cout << setw(20) << "[5]" << " Find User." << endl;
+	cout << setw(20) << "[6]" << " Main Menue." << endl;
+	cout << "=================================================================\n";
+	UserChooses();
 }
+// START MAIN SCREEN
 void BackToMainScreen()
 {
 	system("pause");
@@ -586,7 +973,8 @@ enum enUserChoice
 	Update = 4,
 	Find = 5,
 	Transactions = 6,
-	Exit = 7,
+	ManageUsers = 7,
+	Logout = 8,
 };
 void ResultOfUserChoice(enUserChoice& Choice, vector <string>& vClientData)
 {
@@ -621,8 +1009,13 @@ void ResultOfUserChoice(enUserChoice& Choice, vector <string>& vClientData)
 		ClearScreen();
 		TransactionsScreen(vClientData);
 		break;
-	case enUserChoice::Exit:
-		ExiScreen();
+	case enUserChoice::ManageUsers:
+		ClearScreen();
+		UsersScreen();
+		break;
+	case enUserChoice::Logout:
+		ClearScreen();
+		LoginScreen();
 		break;
 	}
 }
@@ -641,12 +1034,62 @@ vector <string> SaveClientsDataInVector(vector <string>& vClientData)
 	}
 	return vClientData;
 }
+bool PermissionsResult(int UserChoose, int UserPermissions)
+{
+	string UserPermissionsString = "";
+	// convert user permission number to binary number
+	std::bitset<8> binaryNumber(UserPermissions);
+	// convert binary number to string to check the permission
+	UserPermissionsString = binaryNumber.to_string();
+	for (int i = UserPermissionsString.length() - 1; i >= 0; i--)
+	{
+		if (UserPermissionsString.length() - i == UserChoose )
+		{
+			if (UserPermissionsString[i] == '1')
+				return true;
+			else
+				return false;
+		}
+	}
+}
+bool CheckPermissions(int UserChoose)
+{
+	string UserName = CurrentUserName;
+	vector <string> vUsersDate = SaveUsersDateInVector();
+	int UserPermission = 0;
+	for (string& Line : vUsersDate)
+	{
+		vector <string> DateForOneUser = SplitString(Line, Separator);
+		if (UserName == DateForOneUser[0])
+		{
+			UserPermission = stoi(DateForOneUser[2]);
+			break;
+		}
+	}
+	if ( UserPermission == -1 || UserChoose == 8)
+		return true;
+	if (PermissionsResult(UserChoose, UserPermission))
+		return true;
+	else
+	{
+		ClearScreen();
+		cout << "\n-----------------------------------------------------------------\n";
+		cout << "Access Denied !!\n";
+		cout << "you don't have permission to do this ,\n";
+		cout << "Please contact your admin.\n";
+		cout << "\n-----------------------------------------------------------------\n";
+	}
+	system("pause");
+	ClearScreen();
+	MainScreen();
+}
 void UserChoice()
 {
 	vector <string> vClientData;
 	vClientData = SaveClientsDataInVector(vClientData);
 	int UserChoice = 0;
-	UserChoice = ReadNumberInRange("Choose what do you want to do [ 1 to 7 ] ? ", 1, 7);
+	UserChoice = ReadNumberInRange("Choose what do you want to do [ 1 to 8 ] ? ", 1, 8);
+	CheckPermissions(UserChoice);
 	enUserChoice Choice;
 	Choice = (enUserChoice)UserChoice;
 	ResultOfUserChoice(Choice, vClientData);
@@ -662,11 +1105,89 @@ void MainScreen()
 	cout << setw(20) << "[4]" << " Update Client Info." << endl;
 	cout << setw(20) << "[5]" << " Find Client." << endl;
 	cout << setw(20) << "[6]" << " Transactions." << endl;
-	cout << setw(20) << "[7]" << " Exit." << endl;
+	cout << setw(20) << "[7]" << " Manage Users." << endl;
+	cout << setw(20) << "[8]" << " Logout." << endl;
 	cout << "=================================================================\n";
 	UserChoice();
 }
+//LOGIN SCREEN SECTION 
+struct stSignIn
+{
+	string UserName, Password;
+};
+bool CheckUserIfFound(string& UserName, string& Password)
+{
+	vector <string> vUsersDateInLine;
+	fstream myfile;
+	myfile.open(UsersFileName, ios::in);
+	if (myfile.is_open())
+	{
+		string Line;
+		while (getline(myfile, Line))
+		{
+			vUsersDateInLine.push_back(Line);
+		}
+		myfile.close();
+	}
+	for (string& L : vUsersDateInLine)
+	{
+		vector <string> vUsersDateInLine = SplitString(L, Separator);
+		if (vUsersDateInLine[0] == UserName)
+		{
+			if (vUsersDateInLine[1] == Password)
+				return true;
+			else
+				return false;
+		}
+	}
+	return false;
+}
+stSignIn LoginScreenSignIn()
+{
+	stSignIn SignIn;
+	cout << "Enter user name ? ";
+	cin >> SignIn.UserName;
+	cout << "Enter Password ? ";
+	cin >> SignIn.Password;
+	return SignIn;
+}
+vector <string> SaveUsersDateInVector()
+{
+	vector <string> vUsersDate;
+	fstream myfile;
+	myfile.open(UsersFileName, ios::in);
+	if (myfile.is_open())
+	{
+		string OneLine;
+		while (getline(myfile, OneLine))
+		{
+			vUsersDate.push_back(OneLine);
+		}
+		myfile.close();
+	}
+	return vUsersDate;
+}
+void LoginScreen()
+{
+	cout << "\n=================================================================\n";
+	cout << right << setw(35) << "-( Login Screen )-" << endl;
+	cout << "=================================================================\n";
+	vector <string> vUsersDate = SaveUsersDateInVector();
+	stSignIn SignIn = LoginScreenSignIn();
+	while (!CheckUserIfFound(SignIn.UserName, SignIn.Password))
+	{
+		ClearScreen();
+		cout << "\n=================================================================\n";
+		cout << right << setw(35) << "-( Login Screen )-" << endl;
+		cout << "=================================================================\n";
+		cout << "Invalid username/password!\n";
+		SignIn = LoginScreenSignIn();
+	}
+	CurrentUserName = SignIn.UserName;
+	ClearScreen();
+	MainScreen();
+}
 int main()
 {
-	MainScreen();
+	LoginScreen();
 }
