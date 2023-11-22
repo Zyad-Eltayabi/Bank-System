@@ -1,11 +1,17 @@
 # Bank System
 
+##### simple bank management system implemented using the C++ programming language. The system provides various services, such as managing customer information, conducting financial transactions, and user management. The system consists of several screens, including the main screen, user management screen, and transaction screens.
+<hr>
+
+### Screenshots
+<div>
+<img src = "https://github.com/Zyad-Eltayabi/Bank-System/assets/121266052/87e9bc7b-3d63-4a0c-b38e-357ed5ed3335" width = "400">
+<img src = "https://github.com/Zyad-Eltayabi/Bank-System/assets/121266052/18e43d5c-4815-4682-bff4-778fbfe1ab79)" width = "400">
+<img src = "https://github.com/Zyad-Eltayabi/Bank-System/assets/121266052/215b5c04-8291-48a4-9d96-ff3bb5437afa)" width = "400">
+<img src = "https://github.com/Zyad-Eltayabi/Bank-System/assets/121266052/241a322e-de8c-4eb6-ab05-8467c5f62846" width = "400">
+</div>
+
 ### Description
-
-This program is a simple bank management system implemented using the C++ programming language. The system provides various services, such as managing customer information, conducting financial transactions, and user management. The system consists of several screens, including the main screen, user management screen, and transaction screens.
-
-### Code Structure
-
 #### Main Screen 
 
 - The main screen provides options to display customer
